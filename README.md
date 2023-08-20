@@ -1,5 +1,8 @@
 # Yelp-Dataset-Challenge
 A data search application for Yelp.com's business review data, using Python and SQL.
+
+Challenge: https://www.yelp.com/dataset
+
 By using this project, you can:
 * Search businesses based on state, city, zip code, and category
 * Find popular and successful businesses in the area
