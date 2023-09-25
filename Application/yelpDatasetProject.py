@@ -16,6 +16,7 @@ class yelpDatasetProject(QMainWindow):
         self.ui.setupUi(self)
         self.loadStateList()
 
+        # Connects user input events with functions
         self.ui.stateList.currentTextChanged.connect(self.stateChanged)
         self.ui.cityList.itemSelectionChanged.connect(self.cityChanged)
         self.ui.zipList.itemSelectionChanged.connect(self.zipChanged)
@@ -26,6 +27,7 @@ class yelpDatasetProject(QMainWindow):
 
         self.updateTables()
 
+    # Executes a query in the database
     def executeQuery(self, sql_str):
         try:
             conn = psycopg2.connect("dbname='yelpdb' user='postgres' host='localhost' password='mustafa'")
@@ -57,6 +59,7 @@ class yelpDatasetProject(QMainWindow):
         self.ui.stateList.setCurrentIndex(-1)
         self.ui.stateList.clearEditText()
 
+    # Loads all business categories for a specific zipcode
     def loadCategories(self):
         self.ui.categoryList.clear()
         state = self.ui.stateList.currentText()
@@ -73,6 +76,7 @@ class yelpDatasetProject(QMainWindow):
         except:
             print("Category query failed!")
 
+    # Clears results when user changes the selected state. Shows the new cities
     def stateChanged(self):
         if self.justClear:
             return
@@ -92,6 +96,7 @@ class yelpDatasetProject(QMainWindow):
                 self.ui.businessTable.removeRow(i)
             self.clearStatsAndAnalysis()
 
+    # Clears results and shows the new zipcodes when user changes the city
     def cityChanged(self):
         self.ui.zipList.clear()
         self.ui.categoryList.clear()
@@ -112,6 +117,7 @@ class yelpDatasetProject(QMainWindow):
                 self.ui.businessTable.removeRow(i)
             self.clearStatsAndAnalysis()
 
+    # Clears results and shows the categories of the new zipcode
     def zipChanged(self):
         if self.justClear:
             return
@@ -122,6 +128,7 @@ class yelpDatasetProject(QMainWindow):
             self.clearStatsAndAnalysis()
             self.loadCategories()
 
+    # Shows the number of businesses, average review stars, and number of reviews for a zipcode
     def loadStats(self, state, city, zipcode):
         sql_str_businessCount = "SELECT COUNT(*) FROM BusinessTable WHERE state='" + state + "' AND city='" + \
                   city + "' AND postal_code='" + zipcode + "';"
@@ -144,6 +151,7 @@ class yelpDatasetProject(QMainWindow):
             print("Load zipcodestats query has failed")
 
 
+    # Loads the categories for a businesses from most common to least common
     def loadTopCategories(self, state, city, zipcode):
         sql_str = "SELECT COUNT(*) as category_count, C.category_name FROM BusinessTable as B, CategoryTable as C " \
                   "WHERE state='" + state + "' AND city='" + city + "' AND postal_code='" + zipcode + "' AND " \
@@ -167,6 +175,7 @@ class yelpDatasetProject(QMainWindow):
         except:
             print("Top category query has failed.")
 
+    # Displays the businesses that are in the state, city, and zipcode selected by the user
     def searchButtonClicked(self):
         if self.ui.stateList.currentIndex() >= 0 and len(self.ui.cityList.selectedItems()) > 0 and \
                 len(self.ui.zipList.selectedItems()) > 0:
@@ -214,6 +223,7 @@ class yelpDatasetProject(QMainWindow):
             self.loadStats(state, city, zipcode)
             self.loadTopCategories(state, city, zipcode)
 
+    # Clears business results
     def clearButtonClicked(self):
         self.ui.stateList.setCurrentIndex(-1)
         self.ui.stateList.clearEditText()
@@ -235,7 +245,7 @@ class yelpDatasetProject(QMainWindow):
 
         self.clearStatsAndAnalysis()
 
-
+    # Clears the statistic table
     def clearStatsAndAnalysis(self):
         for i in reversed(range(self.ui.categoryTable.rowCount())):
             self.ui.categoryTable.removeRow(i)
@@ -243,6 +253,7 @@ class yelpDatasetProject(QMainWindow):
         self.ui.sumBusLabel.clear()
         self.ui.averageStarLabel.clear()
 
+    # Refreshes the table of businesses
     def refreshButtonPressed(self):
         if self.ui.stateList.currentIndex() >= 0 and len(self.ui.cityList.selectedItems()) > 0 and \
                 len(self.ui.zipList.selectedItems()) > 0:
@@ -259,8 +270,7 @@ class yelpDatasetProject(QMainWindow):
             self.createPopularTable(state, city, zipcode)
             self.createSuccessfulTable(state, city, zipcode)
 
-
-
+    # Updates the business tables with number of reviews, number of check ins, and average review rating
     def updateTables(self):
         sql_str_reviewCount = "UPDATE BusinessTable SET review_count = Reviews.review_count " \
                               "FROM (SELECT ReviewTable.business_id, COUNT(ReviewTable.business_id) " \
@@ -284,6 +294,7 @@ class yelpDatasetProject(QMainWindow):
         except:
             print("Update reviewCount, reviewRating, numCheckins has failed")
 
+    # Analyzes businesses in the city, state, and zipcode to find the most popular ones using an algorithm
     def createPopularTable(self, state, city, zipcode):
         if self.ui.stateList.currentIndex() >= 0 and len(self.ui.cityList.selectedItems()) > 0 and \
                 len(self.ui.zipList.selectedItems()) > 0:
@@ -329,6 +340,7 @@ class yelpDatasetProject(QMainWindow):
             except:
                 print("Popular Business query has failed.")
 
+    # Analyzes businesses in the city, state, and zipcode to find the most successful ones using an algorithm
     def createSuccessfulTable(self, state, city, zipcode):
         if self.ui.stateList.currentIndex() >= 0 and len(self.ui.cityList.selectedItems()) > 0 and \
                 len(self.ui.zipList.selectedItems()) > 0:
